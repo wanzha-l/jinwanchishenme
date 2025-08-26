@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>今晚吃什么 - 随机抽签</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FF7E5F',
+                        secondary: '#FEB47B',
+                        dark: '#2A265F',
+                        light: '#F7F9FC'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .rotate-animation {
+                animation: rotate 0.5s ease-in-out infinite;
+            }
+            .bounce-slow {
+                animation: bounce 2s infinite;
+            }
+            .spin-slow {
+                animation: spin 8s linear infinite;
+            }
+            .scale-in {
+                animation: scaleIn 0.5s ease-out forwards;
+            }
+        }
+        
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        @keyframes scaleIn {
+            from { transform: scale(0); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        .food-item {
+            transition: all 0.3s ease;
+        }
+        
+        .food-item:hover {
+            transform: translateY(-5px);
+        }
+        
+        .lottery-ball {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .lottery-ball:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px -5px rgba(255, 126, 95, 0.4);
+        }
+        
+        .drawing {
+            animation: shake 0.5s ease-in-out infinite, spin 0.8s linear infinite;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            25% { transform: translateY(-10px) rotate(5deg); }
+            50% { transform: translateY(0) rotate(0deg); }
+            75% { transform: translateY(10px) rotate(-5deg); }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-light to-gray-100 min-h-screen font-sans">
+    <div class="container mx-auto px-4 py-8 max-w-5xl">
+        <!-- 标题区域 -->
+        <header class="text-center mb-10">
+            <h1 class="text-[clamp(2rem,5vw,3rem)] font-bold text-dark mb-3 text-shadow">
+                <i class="fa fa-cutlery text-primary mr-3"></i>今晚吃什么？
+            </h1>
+            <p class="text-gray-600 max-w-2xl mx-auto">
+                不知道晚餐吃什么？添加你的选项，让命运来决定吧！
+            </p>
+        </header>
+        
+        <!-- 主要内容区域 -->
+        <main class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+            <!-- 左侧：选项设置 -->
+            <div class="lg:col-span-2 bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+                <h2 class="text-xl font-bold text-dark mb-5 flex items-center">
+                    <i class="fa fa-list-ul text-primary mr-2"></i>食物选项
+                </h2>
+                
+                <!-- 添加食物输入 -->
+                <div class="mb-6">
+                    <label for="food-name" class="block text-sm font-medium text-gray-700 mb-2">添加食物</label>
+                    <div class="flex gap-3">
+                        <input type="text" id="food-name" 
+                            class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                            placeholder="例如：火锅、汉堡、家常菜...">
+                        <button id="add-food" class="bg-primary hover:bg-primary/90 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300">
+                            <i class="fa fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 食物类别标签 -->
+                <div class="mb-6">
+                    <p class="text-sm font-medium text-gray-700 mb-2">快速添加常见类别：</p>
+                    <div class="flex flex-wrap gap-2">
+                        <button class="category-btn bg-gray-100 hover:bg-gray-200 text-gray-800 text-sm py-1 px-3 rounded-full transition-colors" data-category="中餐">中餐</button>
+                        <button class="category-btn bg-gray-100 hover:bg-gray-200 text-gray-800 text-sm py-1 px-3 rounded-full transition-colors" data-category="西餐">西餐</button>
+                        <button class="category-btn bg-gray-100 hover:bg-gray-200 text-gray-800 text-sm py-1 px-3 rounded-full transition-colors" data-category="日料">日料</button>
+                        <button class="category-btn bg-gray-100 hover:bg-gray-200 text-gray-800 text-sm py-1 px-3 rounded-full transition-colors" data-category="快餐">快餐</button>
+                        <button class="category-btn bg-gray-100 hover:bg-gray-200 text-gray-800 text-sm py-1 px-3 rounded-full transition-colors" data-category="火锅">火锅</button>
+                        <button class="category-btn bg-gray-100 hover:bg-gray-200 text-gray-800 text-sm py-1 px-3 rounded-full transition-colors" data-category="烧烤">烧烤</button>
+                        <button class="category-btn bg-gray-100 hover:bg-gray-200 text-gray-800 text-sm py-1 px-3 rounded-full transition-colors" data-category="面食">面食</button>
+                    </div>
+                </div>
+                
+                <!-- 食物列表 -->
+                <div>
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-semibold text-gray-800 flex items-center">
+                            <i class="fa fa-utensils text-secondary mr-2"></i>已添加选项
+                        </h3>
+                        <span id="food-count" class="text-sm bg-gray-100 text-gray-700 px-2 py-1 rounded-full">0个选项</span>
+                    </div>
+                    
+                    <div id="food-list" class="max-h-80 overflow-y-auto pr-2 space-y-2 mb-4">
+                        <div class="text-center text-gray-400 italic py-10">
+                            请添加食物选项
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        <button id="clear-all" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg transition-all duration-300">
+                            <i class="fa fa-trash mr-1"></i>清空
+                        </button>
+                        <button id="add-random" class="flex-1 bg-secondary hover:bg-secondary/90 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300">
+                            <i class="fa fa-random mr-1"></i>随机添加
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 右侧：抽签区域 -->
+            <div class="lg:col-span-3 flex flex-col">
+                <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 flex-1 flex flex-col items-center justify-center">
+                    <h2 class="text-xl font-bold text-dark mb-8 flex items-center">
+                        <i class="fa fa-random text-primary mr-2"></i>抽签结果
+                    </h2>
+                    
+                    <!-- 抽签球 -->
+                    <div class="relative w-64 h-64 mb-8 flex items-center justify-center">
+                        <div id="lottery-ball" class="lottery-ball w-full h-full bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center shadow-lg border-4 border-white">
+                            <div class="text-center p-6">
+                                <p id="result-text" class="text-white font-bold text-xl">点击开始抽签</p>
+                            </div>
+                        </div>
+                        <!-- 装饰元素 -->
+                        <div class="absolute -top-4 -right-4 w-16 h-16 border-4 border-secondary rounded-full"></div>
+                        <div class="absolute -bottom-2 -left-2 w-10 h-10 border-4 border-primary rounded-full"></div>
+                    </div>
+                    
+                    <!-- 抽签按钮 -->
+                    <button id="draw-btn" class="bg-dark hover:bg-dark/90 text-white font-bold py-3 px-8 rounded-full transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-dark/50 text-lg flex items-center">
+                        <i class="fa fa-play-circle mr-2"></i>开始抽签
+                    </button>
+                    
+                    <!-- 历史记录 -->
+                    <div class="mt-10 w-full">
+                        <h3 class="font-semibold text-gray-800 mb-3 flex items-center">
+                            <i class="fa fa-history text-gray-500 mr-2"></i>历史记录
+                        </h3>
+                        <div id="history-list" class="bg-gray-50 rounded-lg p-3 max-h-32 overflow-y-auto text-sm">
+                            <p class="text-gray-400 italic text-center">暂无记录</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <!-- 页脚 -->
+        <footer class="mt-12 text-center text-gray-500 text-sm">
+            <p>今晚吃什么抽签工具 &copy; 2023</p>
+        </footer>
+    </div>
+    
+    <!-- 结果弹窗 -->
+    <div id="result-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 transform transition-all duration-300 scale-95 opacity-0" id="modal-content">
+            <div class="text-center">
+                <div class="w-20 h-20 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="fa fa-utensils text-4xl text-white"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-dark mb-2">今晚就吃这个！</h3>
+                <p class="text-2xl font-bold text-primary mb-6" id="modal-food">火锅</p>
+                <button id="close-modal" class="bg-dark hover:bg-dark/90 text-white font-bold py-2 px-6 rounded-full transition-all duration-300 w-full">
+                    确定
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 食物数据
+        let foods = [];
+        const COMMON_FOODS = {
+            '中餐': ['宫保鸡丁', '鱼香肉丝', '回锅肉', '麻婆豆腐', '北京烤鸭', '水煮鱼', '红烧肉'],
+            '西餐': ['牛排', '披萨', '意大利面', '沙拉', '汉堡', '薯条', '三明治'],
+            '日料': ['寿司', '刺身', '拉面', '天妇罗', '寿喜烧', '鳗鱼饭', '章鱼小丸子'],
+            '快餐': ['麦当劳', '肯德基', '汉堡王', '麻辣烫', '炸鸡', '螺蛳粉', '便当'],
+            '火锅': ['四川火锅', '潮汕牛肉火锅', '北京涮肉', '寿喜烧', '猪肚鸡', '椰子鸡', '串串香'],
+            '烧烤': ['烤羊肉串', '烤鸡翅', '烤生蚝', '烤茄子', '烤玉米', '烤鱿鱼', '烤肉'],
+            '面食': ['兰州拉面', '重庆小面', '刀削面', '热干面', '炸酱面', '馄饨', '饺子']
+        };
+        
+        // DOM 元素
+        const addFoodBtn = document.getElementById('add-food');
+        const foodNameInput = document.getElementById('food-name');
+        const foodListEl = document.getElementById('food-list');
+        const foodCountEl = document.getElementById('food-count');
+        const clearAllBtn = document.getElementById('clear-all');
+        const addRandomBtn = document.getElementById('add-random');
+        const drawBtn = document.getElementById('draw-btn');
+        const resultText = document.getElementById('result-text');
+        const lotteryBall = document.getElementById('lottery-ball');
+        const historyListEl = document.getElementById('history-list');
+        const resultModal = document.getElementById('result-modal');
+        const modalContent = document.getElementById('modal-content');
+        const modalFood = document.getElementById('modal-food');
+        const closeModalBtn = document.getElementById('close-modal');
+        const categoryBtns = document.querySelectorAll('.category-btn');
+        
+        // 初始化
+        function init() {
+            updateFoodList();
+            checkDrawButtonState();
+        }
+        
+        // 添加食物
+        function addFood(name) {
+            if (!name || name.trim() === '') {
+                alert('请输入食物名称');
+                return;
+            }
+            
+            // 检查是否已存在
+            const exists = foods.some(food => food.name.toLowerCase() === name.toLowerCase().trim());
+            if (exists) {
+                alert('这个食物已经添加过了');
+                return;
+            }
+            
+            foods.push({
+                id: Date.now(),
+                name: name.trim()
+            });
+            
+            // 更新UI
+            updateFoodList();
+            checkDrawButtonState();
+            return true;
+        }
+        
+        // 添加食物按钮事件
+        addFoodBtn.addEventListener('click', () => {
+            const name = foodNameInput.value;
+            if (addFood(name)) {
+                foodNameInput.value = '';
+                foodNameInput.focus();
+            }
+        });
+        
+        // 按Enter键添加食物
+        foodNameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                addFoodBtn.click();
+            }
+        });
+        
+        // 类别按钮事件
+        categoryBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const category = btn.dataset.category;
+                const categoryFoods = COMMON_FOODS[category] || [];
+                
+                // 随机选择一个该类别的食物
+                if (categoryFoods.length > 0) {
+                    const randomFood = categoryFoods[Math.floor(Math.random() * categoryFoods.length)];
+                    if (addFood(randomFood)) {
+                        // 给按钮添加选中效果
+                        btn.classList.add('bg-primary', 'text-white');
+                        btn.classList.remove('bg-gray-100', 'text-gray-800');
+                        
+                        setTimeout(() => {
+                            btn.classList.remove('bg-primary', 'text-white');
+                            btn.classList.add('bg-gray-100', 'text-gray-800');
+                        }, 1000);
+                    }
+                }
+            });
+        });
+        
+        // 更新食物列表
+        function updateFoodList() {
+            if (foods.length === 0) {
+                foodListEl.innerHTML = '<div class="text-center text-gray-400 italic py-10">请添加食物选项</div>';
+                foodCountEl.textContent = '0个选项';
+                return;
+            }
+            
+            foodCountEl.textContent = `${foods.length}个选项`;
+            
+            // 生成食物列表HTML
+            foodListEl.innerHTML = '';
+            foods.forEach(food => {
+                const foodEl = document.createElement('div');
+                foodEl.className = 'food-item bg-gray-50 rounded-lg p-3 flex justify-between items-center';
+                foodEl.innerHTML = `
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center mr-3">
+                            <i class="fa fa-utensils"></i>
+                        </div>
+                        <span>${food.name}</span>
+                    </div>
+                    <button class="delete-food text-gray-400 hover:text-red-500 transition-colors p-1" data-id="${food.id}">
+                        <i class="fa fa-times"></i>
+                    </button>
+                `;
+                foodListEl.appendChild(foodEl);
+            });
+            
+            // 添加删除事件
+            document.querySelectorAll('.delete-food').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = parseInt(e.currentTarget.dataset.id);
+                    foods = foods.filter(food => food.id !== id);
+                    updateFoodList();
+                    checkDrawButtonState();
+                });
+            });
+        }
+        
+        // 清空所有食物
+        clearAllBtn.addEventListener('click', () => {
+            if (foods.length === 0) return;
+            
+            if (confirm('确定要清空所有食物选项吗？')) {
+                foods = [];
+                updateFoodList();
+                checkDrawButtonState();
+            }
+        });
+        
+        // 随机添加食物
+        addRandomBtn.addEventListener('click', () => {
+            // 从所有类别中随机选择
+            const categories = Object.keys(COMMON_FOODS);
+            const randomCategory = categories[Math.floor(Math.random() * categories.length)];
+            const categoryFoods = COMMON_FOODS[randomCategory];
+            const randomFood = categoryFoods[Math.floor(Math.random() * categoryFoods.length)];
+            
+            addFood(randomFood);
+        });
+        
+        // 检查抽签按钮状态
+        function checkDrawButtonState() {
+            if (foods.length < 2) {
+                drawBtn.disabled = true;
+                drawBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                drawBtn.classList.remove('hover:scale-105');
+                if (foods.length === 1) {
+                    resultText.textContent = '至少需要2个选项';
+                } else {
+                    resultText.textContent = '点击开始抽签';
+                }
+            } else {
+                drawBtn.disabled = false;
+                drawBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                drawBtn.classList.add('hover:scale-105');
+                resultText.textContent = '点击开始抽签';
+            }
+        }
+        
+        // 抽签功能
+        drawBtn.addEventListener('click', () => {
+            if (foods.length < 2) return;
+            
+            drawBtn.disabled = true;
+            drawBtn.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i>抽签中...';
+            resultText.textContent = '抽签中...';
+            
+            // 添加动画效果
+            lotteryBall.classList.add('drawing');
+            
+            // 随机抽取食物
+            const drawDuration = 3000; // 抽签动画持续时间
+            const interval = 100; // 切换显示的间隔时间
+            const totalSteps = drawDuration / interval;
+            let currentStep = 0;
+            
+            const drawInterval = setInterval(() => {
+                currentStep++;
+                // 随机显示一个食物
+                const randomIndex = Math.floor(Math.random() * foods.length);
+                resultText.textContent = foods[randomIndex].name;
+                
+                // 逐渐减慢速度
+                if (currentStep >= totalSteps * 0.7) {
+                    clearInterval(drawInterval);
+                    setTimeout(() => {
+                        finalDraw();
+                    }, 500);
+                }
+            }, interval);
+        });
+        
+        // 最终抽签结果
+        function finalDraw() {
+            // 随机选择一个食物作为最终结果
+            const randomIndex = Math.floor(Math.random() * foods.length);
+            const winningFood = foods[randomIndex];
+            
+            // 显示结果
+            resultText.textContent = winningFood.name;
+            
+            // 移除动画
+            lotteryBall.classList.remove('drawing');
+            
+            // 重置按钮
+            drawBtn.disabled = false;
+            drawBtn.innerHTML = '<i class="fa fa-play-circle mr-2"></i>开始抽签';
+            
+            // 添加到历史记录
+            addToHistory(winningFood);
+            
+            // 显示结果弹窗
+            setTimeout(() => {
+                modalFood.textContent = winningFood.name;
+                resultModal.classList.remove('hidden');
+                
+                // 弹窗动画
+                setTimeout(() => {
+                    modalContent.classList.remove('scale-95', 'opacity-0');
+                    modalContent.classList.add('scale-100', 'opacity-100');
+                }, 100);
+            }, 500);
+        }
+        
+        // 关闭弹窗
+        closeModalBtn.addEventListener('click', () => {
+            modalContent.classList.remove('scale-100', 'opacity-100');
+            modalContent.classList.add('scale-95', 'opacity-0');
+            
+            setTimeout(() => {
+                resultModal.classList.add('hidden');
+            }, 300);
+        });
+        
+        // 添加到历史记录
+        function addToHistory(food) {
+            const now = new Date();
+            const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+            
+            const historyItem = document.createElement('div');
+            historyItem.className = 'flex justify-between items-center py-2 border-b border-gray-100 last:border-0';
+            historyItem.innerHTML = `
+                <span class="font-medium">${food.name}</span>
+                <span class="text-xs text-gray-500">${timeStr}</span>
+            `;
+            
+            // 如果是第一条记录，清空提示文本
+            if (historyListEl.querySelector('p.italic')) {
+                historyListEl.innerHTML = '';
+            }
+            
+            historyListEl.prepend(historyItem);
+            
+            // 限制历史记录数量
+            if (historyListEl.children.length > 10) {
+                historyListEl.removeChild(historyListEl.lastChild);
+            }
+            
+            // 滚动到顶部
+            historyListEl.scrollTop = 0;
+        }
+        
+        // 初始化页面
+        init();
+    </script>
+</body>
+</html>
